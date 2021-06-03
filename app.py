@@ -29,7 +29,8 @@ class BoardsModel(db.Model, SerializerMixin):
 
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String())
-    columns = db.relationship('ColumnsModel', backref='board', lazy=True)
+    columns = db.relationship(
+        'ColumnsModel', backref='board', lazy=True, cascade="all, delete")
 
     def __init__(self, title):
         self.title = title
@@ -48,7 +49,8 @@ class ColumnsModel(db.Model, SerializerMixin):
 
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String())
-    todos = db.relationship('TodosModel', backref='column', lazy=True)
+    todos = db.relationship('TodosModel', backref='column',
+                            lazy=True, cascade="all, delete")
     board_id = db.Column(db.Integer, db.ForeignKey(
         'boards.id'), nullable=False)
 
