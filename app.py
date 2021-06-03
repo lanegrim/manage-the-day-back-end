@@ -1,7 +1,9 @@
-from flask import Flask
+from flask import Flask, request, jsonify
+from dataclasses import dataclass
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from flask import request
+import json
+from sqlalchemy_serializer import SerializerMixin
 
 
 app = Flask(__name__)
@@ -9,14 +11,9 @@ app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:postgres@localhos
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-
-# @app.route('/')
-# def hello():
-#     return {"hello": "world"}
-
-
 if __name__ == '__main__':
     app.run(debug=True)
+
 
 #################################
 # MODELS
@@ -25,14 +22,19 @@ if __name__ == '__main__':
 # Board Model
 
 
-class BoardsModel(db.Model):
+class BoardsModel(db.Model, SerializerMixin):
     __tablename__ = 'boards'
+
+    serialize_rules = ('-columns.board',)
+
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String())
     columns = db.relationship('ColumnsModel', backref='board', lazy=True)
 
-    def __init__(self, title):
+    def __init__(self, id, title, columns):
+        self.id = id
         self.title = title
+        self.columns = columns
 
     def __repr__(self):
         return f"< {self.title}>"
@@ -41,16 +43,21 @@ class BoardsModel(db.Model):
 # Column Model
 
 
-class ColumnsModel(db.Model):
+class ColumnsModel(db.Model, SerializerMixin):
     __tablename__ = 'columns'
+
+    serialize_rules = ('-todos.column',)
+
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String())
     todos = db.relationship('TodosModel', backref='column', lazy=True)
     board_id = db.Column(db.Integer, db.ForeignKey(
         'boards.id'), nullable=False)
 
-    def __init__(self, title, board_id):
+    def __init__(self, id, title, todos, board_id):
+        self.id = id
         self.title = title
+        self.todos = todos
         self.board_id = board_id
 
     def __repr__(self):
@@ -59,7 +66,7 @@ class ColumnsModel(db.Model):
 # To-do Model
 
 
-class TodosModel(db.Model):
+class TodosModel(db.Model, SerializerMixin):
     __tablename__ = 'todos'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -68,13 +75,15 @@ class TodosModel(db.Model):
         'columns.id'), nullable=False)
     completed = db.Column(db.Boolean())
 
-    def __init__(self, task, column_id, completed):
+    def __init__(self, id, task, column_id, completed):
+        self.id = id
         self.task = task
         self.column_id = column_id
         self.completed = completed
 
     def __repr__(self):
         return f"< {self.task}>"
+
 
 #################################
 # BOARD CRUD ROUTES
@@ -100,8 +109,8 @@ def handle_boards():
         boards = BoardsModel.query.all()
         results = [
             {
+                "id": board.id,
                 "title": board.title,
-                "columns": board.columns,
             } for board in boards]
 
         return {"count": len(results), "boards": results}
@@ -110,12 +119,13 @@ def handle_boards():
 # Retrieve, update, or delete one board by ID
 @app.route('/boards/<board_id>', methods=['GET', 'PUT', 'DELETE'])
 def handle_board(board_id):
-    board = BoardsModel.query.get_or_404(board_id)
+    preboard = BoardsModel.query.get_or_404(board_id)
+    board = preboard.to_dict()
 
     if request.method == 'GET':
         response = {
-            "title": board.title,
-            "columns": board.columns,
+            "title": board['title'],
+            "columns": board['columns'],
         }
         return {"message": "success", "board": response}
 
@@ -156,8 +166,8 @@ def handle_columns():
         columns = ColumnsModel.query.all()
         results = [
             {
+                "id": column.id,
                 "title": column.title,
-                "todos": column.todos,
                 "board_id": column.board_id,
             } for column in columns]
 
@@ -168,13 +178,14 @@ def handle_columns():
 
 @app.route('/columns/<column_id>', methods=['GET', 'PUT', 'DELETE'])
 def handle_column(column_id):
-    column = ColumnsModel.query.get_or_404(column_id)
+    precolumn = ColumnsModel.query.get_or_404(column_id)
+    column = precolumn.to_dict()
 
     if request.method == 'GET':
         response = {
-            "title": column.title,
-            "todos": column.columns,
-            "board_id": column.board_id,
+            "title": column['title'],
+            "todos": column['todos'],
+            "board_id": column['board_id'],
         }
         return {"message": "success", "column": response}
 
@@ -214,12 +225,13 @@ def handle_todos():
             return {"error": "The request payload is not in JSON format"}
 
     elif request.method == 'GET':
-        todos = TodosModel.query.all()
+        pretodos = TodosModel.query.all()
+        todos = pretodos.to_dict()
         results = [
             {
-                "task": todo.task,
-                "column_id": todo.column_id,
-                "completed": todo.completed,
+                "task": todo['task'],
+                "column_id": todo['column_id'],
+                "completed": todo['completed'],
             } for todo in todos]
 
         return {"count": len(results), "todos": results}
@@ -229,13 +241,14 @@ def handle_todos():
 
 @app.route('/todos/<todo_id>', methods=['GET', 'PUT', 'DELETE'])
 def handle_todo(todo_id):
-    todo = TodosModel.query.get_or_404(todo_id)
+    pretodo = TodosModel.query.get_or_404(todo_id)
+    todo = pretodo.to_dict()
 
     if request.method == 'GET':
         response = {
-            "task": todo.task,
-            "column_id": todo.column_id,
-            "completed": todo.completed,
+            "task": todo['task'],
+            "column_id": todo['column_id'],
+            "completed": todo['completed'],
         }
         return {"message": "success", "todo": response}
 
