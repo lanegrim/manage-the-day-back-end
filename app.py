@@ -7,7 +7,7 @@ from sqlalchemy_serializer import SerializerMixin
 
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:postgres@localhost:5432/todos"
+app.config['SQLALCHEMY_DATABASE_URI'] = "https://data.heroku.com/datastores/9b86d52c-b21a-4337-80cd-6292b2d55f63"
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
