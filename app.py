@@ -131,15 +131,15 @@ def handle_board(board_id):
 
     elif request.method == 'PUT':
         data = request.get_json()
-        board.title = data['title'],
-        db.session.add(board)
+        preboard.title = data['title'],
+        db.session.add(preboard)
         db.session.commit()
-        return {"message": f"board {board.title} successfully updated"}
+        return {"message": f"board {preboard.title} successfully updated"}
 
     elif request.method == 'DELETE':
-        db.session.delete(board)
+        db.session.delete(preboard)
         db.session.commit()
-        return {"message": f"board {board.title} successfully deleted."}
+        return {"message": f"board {preboard.title} successfully deleted."}
 
 #################################
 # COLUMN CRUD ROUTES
@@ -191,16 +191,16 @@ def handle_column(column_id):
 
     elif request.method == 'PUT':
         data = request.get_json()
-        column.title = data['title'],
-        column.board_id = data['board_id']
-        db.session.add(column)
+        precolumn.title = data['title'],
+        precolumn.board_id = data['board_id']
+        db.session.add(precolumn)
         db.session.commit()
-        return {"message": f"column {column.title} successfully updated"}
+        return {"message": f"column {precolumn.title} successfully updated"}
 
     elif request.method == 'DELETE':
-        db.session.delete(column)
+        db.session.delete(precolumn)
         db.session.commit()
-        return {"message": f"column {column.title} successfully deleted."}
+        return {"message": f"column {precolumn.title} successfully deleted."}
 
 #################################
 # TO_DO CRUD ROUTES
@@ -254,14 +254,14 @@ def handle_todo(todo_id):
 
     elif request.method == 'PUT':
         data = request.get_json()
-        todo.task = data['task']
-        todo.column_id = data['column_id']
-        todo.completed = data['completed']
-        db.session.add(todo)
+        pretodo.task = data['task']
+        pretodo.column_id = data['column_id']
+        pretodo.completed = data['completed']
+        db.session.add(pretodo)
         db.session.commit()
-        return {"message": f"todo {todo.task} successfully updated"}
+        return {"message": f"todo {pretodo.task} successfully updated"}
 
     elif request.method == 'DELETE':
-        db.session.delete(todo)
+        db.session.delete(pretodo)
         db.session.commit()
-        return {"message": f"todo {todo.task} successfully deleted."}
+        return {"message": f"todo {pretodo.task} successfully deleted."}
