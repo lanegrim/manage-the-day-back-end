@@ -42,7 +42,9 @@ def handle_todos():
         if request.is_json:
             data = request.get_json()
             new_todo = TodosModel(
-                task=data['task'], column=data['column'], completed=data['completed'])
+                task=data['task'],
+                column=data['column'],
+                completed=data['completed'])
             db.session.add(new_todo)
             db.session.commit()
             return {"message": f"task {new_todo.task} has been created successfully."}
@@ -59,3 +61,30 @@ def handle_todos():
             } for todo in todos]
 
         return {"count": len(results), "todos": results}
+
+
+@app.route('/todos/<todo_id>', methods=['GET', 'PUT', 'DELETE'])
+def handle_todo(todo_id):
+    todo = TodosModel.query.get_or_404(todo_id)
+
+    if request.method == 'GET':
+        response = {
+            "task": todo.task,
+            "column": todo.column,
+            "completed": todo.completed,
+        }
+        return {"message": "success", "todo": response}
+
+    elif request.method == 'PUT':
+        data = request.get_json()
+        todo.task = data['task']
+        todo.column = data['column']
+        todo.completed = data['completed']
+        db.session.add(todo)
+        db.session.commit()
+        return {"message": f"todo {todo.task} successfully updated"}
+
+    elif request.method == 'DELETE':
+        db.session.delete(todo)
+        db.session.commit()
+        return {"message": f"todo {todo.task} successfully deleted."}
