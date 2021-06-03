@@ -31,10 +31,8 @@ class BoardsModel(db.Model, SerializerMixin):
     title = db.Column(db.String())
     columns = db.relationship('ColumnsModel', backref='board', lazy=True)
 
-    def __init__(self, id, title, columns):
-        self.id = id
+    def __init__(self, title):
         self.title = title
-        self.columns = columns
 
     def __repr__(self):
         return f"< {self.title}>"
@@ -54,10 +52,8 @@ class ColumnsModel(db.Model, SerializerMixin):
     board_id = db.Column(db.Integer, db.ForeignKey(
         'boards.id'), nullable=False)
 
-    def __init__(self, id, title, todos, board_id):
-        self.id = id
+    def __init__(self, title, board_id):
         self.title = title
-        self.todos = todos
         self.board_id = board_id
 
     def __repr__(self):
@@ -75,8 +71,7 @@ class TodosModel(db.Model, SerializerMixin):
         'columns.id'), nullable=False)
     completed = db.Column(db.Boolean())
 
-    def __init__(self, id, task, column_id, completed):
-        self.id = id
+    def __init__(self, task, column_id, completed):
         self.task = task
         self.column_id = column_id
         self.completed = completed
@@ -119,27 +114,27 @@ def handle_boards():
 # Retrieve, update, or delete one board by ID
 @app.route('/boards/<board_id>', methods=['GET', 'PUT', 'DELETE'])
 def handle_board(board_id):
-    preboard = BoardsModel.query.get_or_404(board_id)
-    board = preboard.to_dict()
+    board = BoardsModel.query.get_or_404(board_id)
+    dict_board = board.to_dict()
 
     if request.method == 'GET':
         response = {
-            "title": board['title'],
-            "columns": board['columns'],
+            "title": dict_board['title'],
+            "columns": dict_board['columns'],
         }
         return {"message": "success", "board": response}
 
     elif request.method == 'PUT':
         data = request.get_json()
-        preboard.title = data['title'],
-        db.session.add(preboard)
+        board.title = data['title'],
+        db.session.add(board)
         db.session.commit()
-        return {"message": f"board {preboard.title} successfully updated"}
+        return {"message": f"board {board.title} successfully updated"}
 
     elif request.method == 'DELETE':
-        db.session.delete(preboard)
+        db.session.delete(board)
         db.session.commit()
-        return {"message": f"board {preboard.title} successfully deleted."}
+        return {"message": f"board {board.title} successfully deleted."}
 
 #################################
 # COLUMN CRUD ROUTES
@@ -178,29 +173,29 @@ def handle_columns():
 
 @app.route('/columns/<column_id>', methods=['GET', 'PUT', 'DELETE'])
 def handle_column(column_id):
-    precolumn = ColumnsModel.query.get_or_404(column_id)
-    column = precolumn.to_dict()
+    column = ColumnsModel.query.get_or_404(column_id)
+    dict_column = column.to_dict()
 
     if request.method == 'GET':
         response = {
-            "title": column['title'],
-            "todos": column['todos'],
-            "board_id": column['board_id'],
+            "title": dict_column['title'],
+            "todos": dict_column['todos'],
+            "board_id": dict_column['board_id'],
         }
         return {"message": "success", "column": response}
 
     elif request.method == 'PUT':
         data = request.get_json()
-        precolumn.title = data['title'],
-        precolumn.board_id = data['board_id']
-        db.session.add(precolumn)
+        column.title = data['title'],
+        column.board_id = data['board_id']
+        db.session.add(column)
         db.session.commit()
-        return {"message": f"column {precolumn.title} successfully updated"}
+        return {"message": f"column {column.title} successfully updated"}
 
     elif request.method == 'DELETE':
-        db.session.delete(precolumn)
+        db.session.delete(column)
         db.session.commit()
-        return {"message": f"column {precolumn.title} successfully deleted."}
+        return {"message": f"column {column.title} successfully deleted."}
 
 #################################
 # TO_DO CRUD ROUTES
@@ -225,13 +220,13 @@ def handle_todos():
             return {"error": "The request payload is not in JSON format"}
 
     elif request.method == 'GET':
-        pretodos = TodosModel.query.all()
-        todos = pretodos.to_dict()
+        todos = TodosModel.query.all()
         results = [
             {
-                "task": todo['task'],
-                "column_id": todo['column_id'],
-                "completed": todo['completed'],
+                "id": todo.id,
+                "task": todo.task,
+                "column_id": todo.column_id,
+                "completed": todo.completed,
             } for todo in todos]
 
         return {"count": len(results), "todos": results}
@@ -241,27 +236,28 @@ def handle_todos():
 
 @app.route('/todos/<todo_id>', methods=['GET', 'PUT', 'DELETE'])
 def handle_todo(todo_id):
-    pretodo = TodosModel.query.get_or_404(todo_id)
-    todo = pretodo.to_dict()
+    todo = TodosModel.query.get_or_404(todo_id)
+    dict_todo = todo.to_dict()
 
     if request.method == 'GET':
         response = {
-            "task": todo['task'],
-            "column_id": todo['column_id'],
-            "completed": todo['completed'],
+            "id": dict_todo['id'],
+            "task": dict_todo['task'],
+            "column_id": dict_todo['column_id'],
+            "completed": dict_todo['completed'],
         }
         return {"message": "success", "todo": response}
 
     elif request.method == 'PUT':
         data = request.get_json()
-        pretodo.task = data['task']
-        pretodo.column_id = data['column_id']
-        pretodo.completed = data['completed']
-        db.session.add(pretodo)
+        todo.task = data['task']
+        todo.column_id = data['column_id']
+        todo.completed = data['completed']
+        db.session.add(todo)
         db.session.commit()
-        return {"message": f"todo {pretodo.task} successfully updated"}
+        return {"message": f"todo {todo.task} successfully updated"}
 
     elif request.method == 'DELETE':
-        db.session.delete(pretodo)
+        db.session.delete(todo)
         db.session.commit()
-        return {"message": f"todo {pretodo.task} successfully deleted."}
+        return {"message": f"todo {todo.task} successfully deleted."}
