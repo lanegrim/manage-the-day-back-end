@@ -29,11 +29,13 @@ class BoardsModel(db.Model, SerializerMixin):
 
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String())
+    owner = db.Column(db.String())
     columns = db.relationship(
         'ColumnsModel', backref='board', lazy=True, cascade="all, delete")
 
-    def __init__(self, title):
+    def __init__(self, title, owner):
         self.title = title
+        self.owner = owner
 
     def __repr__(self):
         return f"< {self.title}>"
@@ -95,7 +97,8 @@ def handle_boards():
         if request.is_json:
             data = request.get_json()
             new_board = BoardsModel(
-                title=data['title'])
+                title=data['title'],
+                owner=data['owner'])
             db.session.add(new_board)
             db.session.commit()
             return {"message": f"board {new_board.title} has been created successfully."}
@@ -108,6 +111,7 @@ def handle_boards():
             {
                 "id": board.id,
                 "title": board.title,
+                "owner": board.owner
             } for board in boards]
 
         return {"count": len(results), "boards": results}
