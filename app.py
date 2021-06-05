@@ -126,6 +126,7 @@ def handle_board(board_id):
 
     if request.method == 'GET':
         response = {
+            "id": dict_board['id'],
             "title": dict_board['title'],
             "columns": dict_board['columns'],
         }
@@ -185,6 +186,7 @@ def handle_column(column_id):
 
     if request.method == 'GET':
         response = {
+            "id": dict_column['id'],
             "title": dict_column['title'],
             "todos": dict_column['todos'],
             "board_id": dict_column['board_id'],
