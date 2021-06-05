@@ -4,9 +4,10 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 import json
 from sqlalchemy_serializer import SerializerMixin
-
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://kzeiikfzxqumzz:3ae3888c9f3dd012a82ba83d668f53a8975836a2a99794ca0145a9c7f22ec8b8@ec2-54-205-183-19.compute-1.amazonaws.com:5432/dbm4r4rgqj1n7"
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
