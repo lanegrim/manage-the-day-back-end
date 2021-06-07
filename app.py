@@ -33,10 +33,12 @@ class BoardsModel(db.Model, SerializerMixin):
     owner = db.Column(db.String())
     columns = db.relationship(
         'ColumnsModel', backref='board', lazy=True, cascade="all, delete")
+    columnOrder = db.Column(db.ARRAY(db.String()), server_default="{}")
 
-    def __init__(self, title, owner):
+    def __init__(self, title, owner, columnOrder):
         self.title = title
         self.owner = owner
+        self.columnOrder = columnOrder
 
     def __repr__(self):
         return f"< {self.title}>"
@@ -56,10 +58,12 @@ class ColumnsModel(db.Model, SerializerMixin):
                             lazy=True, cascade="all, delete")
     board_id = db.Column(db.Integer, db.ForeignKey(
         'boards.id'), nullable=False)
+    todoOrder = db.Column(db.ARRAY(db.String()), server_default="{}")
 
-    def __init__(self, title, board_id):
+    def __init__(self, title, board_id, todoOrder):
         self.title = title
         self.board_id = board_id
+        self.todoOrder = todoOrder
 
     def __repr__(self):
         return f"< {self.title}>"
@@ -129,6 +133,7 @@ def handle_board(board_id):
             "id": dict_board['id'],
             "title": dict_board['title'],
             "columns": dict_board['columns'],
+            "columnOrder": dict_board['columnOrder']
         }
         return {"message": "success", "board": response}
 
@@ -190,6 +195,7 @@ def handle_column(column_id):
             "title": dict_column['title'],
             "todos": dict_column['todos'],
             "board_id": dict_column['board_id'],
+            "todoOrder": dict_column['todoOrder']
         }
         return {"message": "success", "column": response}
 
