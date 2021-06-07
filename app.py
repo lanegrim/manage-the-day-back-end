@@ -33,7 +33,7 @@ class BoardsModel(db.Model, SerializerMixin):
     owner = db.Column(db.String())
     columns = db.relationship(
         'ColumnsModel', backref='board', lazy=True, cascade="all, delete")
-    columnOrder = db.Column(db.ARRAY(db.String()))
+    columnOrder = db.Column(db.ARRAY(db.String()), nullable=True)
 
     def __init__(self, title, owner, columnOrder):
         self.title = title
@@ -58,7 +58,7 @@ class ColumnsModel(db.Model, SerializerMixin):
                             lazy=True, cascade="all, delete")
     board_id = db.Column(db.Integer, db.ForeignKey(
         'boards.id'), nullable=False)
-    todoOrder = db.Column(db.ARRAY(db.String()))
+    todoOrder = db.Column(db.ARRAY(db.String()), nullable=True)
 
     def __init__(self, title, board_id, todoOrder):
         self.title = title
@@ -103,7 +103,8 @@ def handle_boards():
             data = request.get_json()
             new_board = BoardsModel(
                 title=data['title'],
-                owner=data['owner'])
+                owner=data['owner'],
+                columnOrder=data['columnOrder'])
             db.session.add(new_board)
             db.session.commit()
             return {"message": f"board {new_board.title} has been created successfully."}
@@ -140,6 +141,7 @@ def handle_board(board_id):
     elif request.method == 'PUT':
         data = request.get_json()
         board.title = data['title'],
+        board.columnOrder = data['columnOrder'],
         db.session.add(board)
         db.session.commit()
         return {"message": f"board {board.title} successfully updated"}
@@ -163,7 +165,8 @@ def handle_columns():
             data = request.get_json()
             new_column = ColumnsModel(
                 title=data['title'],
-                board_id=data['board_id'])
+                board_id=data['board_id'],
+                todoOrder=data['todoOrder'])
             db.session.add(new_column)
             db.session.commit()
             return {"message": f"column {new_column.title} has been created successfully."}
@@ -202,7 +205,8 @@ def handle_column(column_id):
     elif request.method == 'PUT':
         data = request.get_json()
         column.title = data['title'],
-        column.board_id = data['board_id']
+        column.board_id = data['board_id'],
+        column.todoOrder = data['todoOrder']
         db.session.add(column)
         db.session.commit()
         return {"message": f"column {column.title} successfully updated"}
