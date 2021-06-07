@@ -117,7 +117,8 @@ def handle_boards():
             {
                 "id": board.id,
                 "title": board.title,
-                "owner": board.owner
+                "owner": board.owner,
+                "columnOrder": board.columnOrder
             } for board in boards]
 
         return {"count": len(results), "boards": results}
