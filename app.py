@@ -135,7 +135,8 @@ def handle_board(board_id):
             "id": dict_board['id'],
             "title": dict_board['title'],
             "columns": dict_board['columns'],
-            "columnOrder": dict_board['columnOrder']
+            "columnOrder": dict_board['columnOrder'],
+            "owner": dict_board['owner']
         }
         return {"message": "success", "board": response}
 
