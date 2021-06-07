@@ -34,11 +34,13 @@ class BoardsModel(db.Model, SerializerMixin):
     columns = db.relationship(
         'ColumnsModel', backref='board', lazy=True, cascade="all, delete")
     columnOrder = db.Column(db.ARRAY(db.String()), nullable=True)
+    collaborators = db.Column(db.ARRAY(db.String()), nullable=True)
 
-    def __init__(self, title, owner, columnOrder):
+    def __init__(self, title, owner, columnOrder, collaborators):
         self.title = title
         self.owner = owner
         self.columnOrder = columnOrder
+        self.collaborators = collaborators
 
     def __repr__(self):
         return f"< {self.title}>"
@@ -104,7 +106,8 @@ def handle_boards():
             new_board = BoardsModel(
                 title=data['title'],
                 owner=data['owner'],
-                columnOrder=data['columnOrder'])
+                columnOrder=data['columnOrder'],
+                collaborators=data['collaborators'])
             db.session.add(new_board)
             db.session.commit()
             return {"message": f"board {new_board.title} has been created successfully."}
@@ -118,7 +121,8 @@ def handle_boards():
                 "id": board.id,
                 "title": board.title,
                 "owner": board.owner,
-                "columnOrder": board.columnOrder
+                "columnOrder": board.columnOrder,
+                "collaborators": board.collaborators
             } for board in boards]
 
         return {"count": len(results), "boards": results}
@@ -136,7 +140,8 @@ def handle_board(board_id):
             "title": dict_board['title'],
             "columns": dict_board['columns'],
             "columnOrder": dict_board['columnOrder'],
-            "owner": dict_board['owner']
+            "owner": dict_board['owner'],
+            "collaborators": dict_board['collaborators']
         }
         return {"message": "success", "board": response}
 
@@ -144,6 +149,7 @@ def handle_board(board_id):
         data = request.get_json()
         board.title = data['title'],
         board.columnOrder = data['columnOrder'],
+        board.collaborators = data['collaborators'],
         db.session.add(board)
         db.session.commit()
         return {"message": f"board {board.title} successfully updated"}
