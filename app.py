@@ -33,7 +33,7 @@ class BoardsModel(db.Model, SerializerMixin):
     owner = db.Column(db.String())
     columns = db.relationship(
         'ColumnsModel', backref='board', lazy=True, cascade="all, delete")
-    columnOrder = db.Column(db.ARRAY(db.String()))
+    columnOrder = db.Column(db.ARRAY())
 
     def __init__(self, title, owner, columnOrder):
         self.title = title
@@ -58,7 +58,7 @@ class ColumnsModel(db.Model, SerializerMixin):
                             lazy=True, cascade="all, delete")
     board_id = db.Column(db.Integer, db.ForeignKey(
         'boards.id'), nullable=False)
-    todoOrder = db.Column(db.ARRAY(db.String()))
+    todoOrder = db.Column(db.ARRAY())
 
     def __init__(self, title, board_id, todoOrder):
         self.title = title
