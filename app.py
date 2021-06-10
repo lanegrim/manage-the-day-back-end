@@ -33,8 +33,8 @@ class BoardsModel(db.Model, SerializerMixin):
     owner = db.Column(db.String())
     columns = db.relationship(
         'ColumnsModel', backref='board', lazy=True, cascade="all, delete")
-    columnOrder = db.Column(db.ARRAY(db.String()), nullable=True)
-    collaborators = db.Column(db.ARRAY(db.String()))
+    columnOrder = db.Column(db.String())
+    collaborators = db.Column(db.String())
 
     def __init__(self, title, owner, columnOrder, collaborators):
         self.title = title
